@@ -155,21 +155,22 @@ namespace Lab4
 
 		// TODO
 		/**
-         * <summary> Returns the number of connecxted components in the graph .</summary>
+         * <summary> Returns the number of connected components in the graph .</summary>
          */
 		public int ConnectedComponents
 		{
 			get
 			{
 				int connectedComponents = 0;
-
-				// for all the nodes
-				//     if node is white
-				//        connectedComponents++
-				//        explore the neighbors
-				//        
-
-
+				
+				foreach(var node in Nodes)
+                {
+					if (node.Color == Color.White)
+                    {
+						connectedComponents++;
+						DFSVisit(node, default);
+                    }
+                }
 
 				return connectedComponents;
 			}
@@ -185,12 +186,14 @@ namespace Lab4
 		{
 			Dictionary<Node, Node> predecessorDictionary = new Dictionary<Node, Node>();
 
-			// foreach v in V do
-			//    pred[v] = -1
-			//    color[v] = white
-			//    
-			// dfsVisit(startingNode)
-			
+			ResetNodeColor();
+
+			foreach (var node in Nodes)
+            {
+				predecessorDictionary[node] = default;
+            }
+
+			DFSVisit(startingNode, predecessorDictionary);
 
 			return predecessorDictionary;
 		}
@@ -198,14 +201,16 @@ namespace Lab4
 		// TODO
 		private void DFSVisit(Node node, Dictionary<Node, Node> pred)
 		{
-			// color[node] = gray
-			// foreach neighbor v of node
-			//    if color[v] = white then
-			//        pred[v] = node
-			//        dfsVisit(v, pred)
-            // color[node] = black
-
-
+			node.Color = Color.Gray;
+			foreach (var neighbor in node.Neighbors)
+            {
+				if (neighbor.Color == Color.White)
+                {
+					pred[neighbor] = node;
+					DFSVisit(neighbor, pred);
+                }
+            }
+			node.Color = Color.Black;
 		}
 
 
@@ -219,29 +224,31 @@ namespace Lab4
 			var predecessorDictionary = new Dictionary<Node, (Node pred, int dist)>();
 			Queue<Node> queue = new Queue<Node>();
 
-			// init
-			// foreach v in V do
-			//    pred[v] = -1
-			//    dist[v] = infinity
-			//    color[v] = white
+			foreach (var node in Nodes)
+            {
+				predecessorDictionary[node] = (null, default);
+				node.Color = Color.White;
+            }
 
-			// startingNode.color = gray
-			// dist[startingNode] = 0
+			startingNode.Color = Color.Gray;
+			predecessorDictionary[startingNode] = (null, 0);
+			queue.Enqueue(startingNode);
 
-			// queue = empty Queue
-			// queuue.enqueue(startingNode)
-
-			// while( queue is not empty ) do
-			//   u = head(Q)
-			//   foreach neighbor v of u do
-			//      if v.color = white then
-			//        dist[v] = dist[u] + 1
-			//        pred[v] = u
-			//        color[v] = gray
-			//        enqueue(v)
-			//   queue.dequeue()
-			//   color[u] = black
-
+			while (queue.Count > 0)
+            {
+				Node currNode = queue.Peek();
+				foreach (var neighbor in currNode.Neighbors)
+                {
+					if (neighbor.Color == Color.White)
+                    {
+						predecessorDictionary[neighbor] = (currNode, predecessorDictionary[currNode].dist + 1);
+						neighbor.Color = Color.Gray;
+						queue.Enqueue(neighbor);
+                    }
+                }
+				queue.Dequeue();
+				currNode.Color = Color.Black;
+            }
 			
 			return predecessorDictionary;
 		}
